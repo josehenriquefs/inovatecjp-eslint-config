@@ -1,4 +1,4 @@
-// base.js — Flat config (ESM) universal
+// base.js — Flat config (ESM) universal, sem regras que exigem type info
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import prettier from 'eslint-config-prettier'
@@ -23,6 +23,10 @@ export default [
       '**/coverage/**',
       '**/.turbo/**',
       '**/.cache/**',
+
+      // evita rodar em configs do próprio projeto (opcional)
+      'eslint.config.*',
+      'prettier.config.*',
     ],
   },
 
@@ -37,8 +41,7 @@ export default [
         ...globals.es2024,
       },
       parserOptions: {
-        // Type-aware vem na variante base-typeaware.js
-        // project: undefined,
+        // ❗️Não configuramos "project" aqui (sem type-aware neste preset)
       },
     },
     plugins: {
@@ -71,10 +74,11 @@ export default [
       // console (universal)
       'no-console': 'warn',
 
-      // TypeScript
+      // TypeScript (apenas regras que NÃO exigem type info)
       '@typescript-eslint/consistent-type-definitions': ['warn', 'interface'],
-      '@typescript-eslint/no-misused-promises': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
+      // ❌ Regra que exige type info — deixamos OFF no base:
+      '@typescript-eslint/no-misused-promises': 'off',
 
       // Import (plugin-import)
       'import/order': [

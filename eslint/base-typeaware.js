@@ -2,9 +2,10 @@
 import tsParser from '@typescript-eslint/parser'
 import base from './base.js'
 
+// clona o array de configs do base
 const withTypeAware = structuredClone(base)
 
-// Encontra o bloco principal (aquele com files/rules) e injeta project/tsconfigRootDir
+// injeta o parserOptions.project/tsconfigRootDir onde há languageOptions
 for (const item of withTypeAware) {
   if (item.files && item.languageOptions) {
     item.languageOptions = {
@@ -19,6 +20,19 @@ for (const item of withTypeAware) {
         ],
         tsconfigRootDir: process.cwd(),
       },
+    }
+
+    // ⚠️ Ative aqui apenas regras que exigem type info
+    item.rules = {
+      ...(item.rules ?? {}),
+      '@typescript-eslint/no-misused-promises': 'warn',
+      // (Se no futuro você quiser, aqui é o lugar para:
+      // '@typescript-eslint/no-floating-promises': 'warn',
+      // '@typescript-eslint/no-unsafe-assignment': 'warn',
+      // '@typescript-eslint/no-unsafe-member-access': 'warn',
+      // '@typescript-eslint/no-unsafe-argument': 'warn',
+      // '@typescript-eslint/restrict-template-expressions': 'warn',
+      // ...sempre mantendo OFF no base)
     }
   }
 }
