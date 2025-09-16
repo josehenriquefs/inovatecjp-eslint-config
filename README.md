@@ -63,6 +63,34 @@ inovatecjp format:check "src/**/*.{ts,tsx}"
 
 ---
 
+## Prettier — arquivo mínimo no projeto (necessário)
+
+Para que o **editor** (VS Code) use exatamente o mesmo preset que o CLI usa, crie um arquivo mínimo na **raiz do projeto**:
+
+```js
+// prettier.config.cjs
+module.exports = require('@inovatecjp/eslint-config/prettier')
+```
+
+Se quiser customizar algo, você pode sobrescrever opções específicas:
+
+```js
+const base = require('@inovatecjp/eslint-config/prettier')
+module.exports = { ...base, singleQuote: true }
+```
+
+No VS Code, garanta que o Prettier será usado ao salvar:
+
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.requireConfig": true
+}
+```
+
+> Você **não precisa** criar `eslint.config.js` no projeto (o CLI já aponta para os presets). Mas para que o **editor** aplique o mesmo estilo do CLI ao salvar, é **necessário** ter o `prettier.config.cjs` acima na raiz do projeto.
+
 ## O que vem no pacote
 
 * **ESLint 9** (flat) + **Prettier 3**;
@@ -114,8 +142,7 @@ Não. O pacote já inclui tudo (*batteries‑included*). Você só precisa de `t
 **E se meu projeto for só Node e eu não usar React?**
 Sem problema: use `--stack=node` e o CLI só carrega os plugins do preset Node.
 
-**`react/react-in-jsx-scope` está como `error`. Isso quebra projetos com runtime automático (React 17+)?**
-Sim, se você não importa `React` nos arquivos. Mantivemos conforme o preset desejado; se quiser, pode desligar essa regra.
+
 
 ---
 
