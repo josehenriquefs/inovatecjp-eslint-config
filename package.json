@@ -1,0 +1,65 @@
+{
+  "name": "@inovatecjp/eslint-config",
+  "author": {"name": "@josehenriquefs","email": "devjosehenriquefs@gmail.com"},
+  "version": "1.1.0",
+  "description": "All-in-one ESLint 9 (flat) + Prettier with CLI for inovatecjp teams (react, react-native, node).",
+  "type": "module",
+  "license": "MIT",
+  "publishConfig": { "access": "public" },
+  "engines": { "node": ">=18.18" },
+
+  "main": "eslint/index.js",
+  "exports": {
+    ".": "./eslint/index.js",
+    "./base": "./eslint/base.js",
+    "./base-typeaware": "./eslint/base-typeaware.js",
+    "./react": "./eslint/react.js",
+    "./react-typeaware": "./eslint/react-typeaware.js",
+    "./react-native": "./eslint/react-native.js",
+    "./react-native-typeaware": "./eslint/react-native-typeaware.js",
+    "./node": "./eslint/node.js",
+    "./node-typeaware": "./eslint/node-typeaware.js",
+    "./tests": "./eslint/tests.js",
+    "./prettier": "./prettier.cjs"
+  },
+  "files": [
+    "bin",
+    "eslint",
+    "prettier.cjs",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "bin": {
+    "inovatecjp": "bin/cli.js"
+  },
+  "keywords": ["eslint", "prettier", "config", "cli", "inovatecjp"],
+
+  "dependencies": {
+    "eslint": "^9.11.0",
+    "prettier": "^3.3.3",
+
+    "@typescript-eslint/parser": "^8.8.0",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+
+    "eslint-config-prettier": "^9.1.0",
+
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+
+    "eslint-plugin-unicorn": "^55.0.0",
+    "eslint-plugin-n": "^17.10.0",
+
+    "eslint-plugin-react": "^7.35.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
+    "eslint-plugin-react-native": "^5.0.0",
+    "eslint-plugin-react-native-a11y": "^3.3.0",
+
+    "eslint-plugin-vitest": "^0.4.1",
+    "globals": "^15.9.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  }
+}
