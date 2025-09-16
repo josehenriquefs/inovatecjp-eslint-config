@@ -2,7 +2,7 @@
 // CLI da InovatecJP — ESLint (API) + Prettier, com stacks e --typeaware
 import { ESLint } from 'eslint'
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -53,7 +53,7 @@ async function runESLint() {
   const overrideConfigFile = resolveEslintConfig()
   const fix = args.cmd === 'lint:fix'
 
-  // ⚠️ ESLint 9: não use 'useEslintrc'. Flat config já é padrão.
+  // ESLint 9: flat config por arquivo; não use 'useEslintrc'
   const eslint = new ESLint({
     overrideConfigFile,
     errorOnUnmatchedPattern: false,
@@ -70,7 +70,7 @@ async function runESLint() {
   const errorCount = results.reduce((acc, r) => acc + r.errorCount, 0)
   const warningCount = results.reduce((acc, r) => acc + r.warningCount, 0)
 
-  // Em CI, warnings falham o job (comportamento da sua lib)
+  // Em CI, warnings também falham
   if (process.env.CI && warningCount > 0) {
     process.exitCode = 1
   } else if (errorCount > 0) {
@@ -81,7 +81,8 @@ async function runESLint() {
 }
 
 function hasLocalPrettierConfig(cwd = process.cwd()) {
-  const candidates = [
+  // 1) Arquivos de config suportados
+  const fileCandidates = [
     'prettier.config.cjs',
     'prettier.config.js',
     'prettier.config.mjs',
@@ -92,9 +93,20 @@ function hasLocalPrettierConfig(cwd = process.cwd()) {
     '.prettierrc.json',
     '.prettierrc.yml',
     '.prettierrc.yaml',
-    'package.json', // pode ter campo "prettier"
   ].map((p) => resolve(cwd, p))
-  return candidates.some((p) => existsSync(p))
+  if (fileCandidates.some((p) => existsSync(p))) return true
+
+  // 2) package.json só conta se tiver o campo "prettier"
+  const pkgPath = resolve(cwd, 'package.json')
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+      if (pkg && pkg.prettier) return true
+    } catch {
+      // ignore JSON parse errors
+    }
+  }
+  return false
 }
 
 function runPrettier(write) {
@@ -111,14 +123,13 @@ function runPrettier(write) {
     ...patterns,
   ]
 
-  // Se o projeto NÃO tiver config próprio do Prettier,
-  // usamos o preset padrão do pacote (@inovatecjp/eslint-config/prettier).
+  // Se não houver config local, injeta o preset do pacote
   if (!hasLocalPrettierConfig()) {
     try {
       const defaultCfg = require.resolve('@inovatecjp/eslint-config/prettier')
       cliArgs.unshift('--config', defaultCfg)
     } catch {
-      // se por algum motivo não resolver, segue sem --config
+      // se não resolver, segue sem --config
     }
   }
 
