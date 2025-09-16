@@ -2,6 +2,7 @@
 // CLI da InovatecJP — ESLint (API) + Prettier, com stacks e --typeaware
 import { ESLint } from 'eslint'
 import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -52,11 +53,11 @@ async function runESLint() {
   const overrideConfigFile = resolveEslintConfig()
   const fix = args.cmd === 'lint:fix'
 
+  // ⚠️ ESLint 9: não use 'useEslintrc'. Flat config já é padrão.
   const eslint = new ESLint({
-    useEslintrc: false,
     overrideConfigFile,
     errorOnUnmatchedPattern: false,
-    fix
+    fix,
   })
 
   const results = await eslint.lintFiles(['.'])
@@ -69,7 +70,7 @@ async function runESLint() {
   const errorCount = results.reduce((acc, r) => acc + r.errorCount, 0)
   const warningCount = results.reduce((acc, r) => acc + r.warningCount, 0)
 
-  // Em CI, travamos em warning também (comportamento compatível com README)
+  // Em CI, warnings falham o job (comportamento da sua lib)
   if (process.env.CI && warningCount > 0) {
     process.exitCode = 1
   } else if (errorCount > 0) {
@@ -79,8 +80,24 @@ async function runESLint() {
   }
 }
 
+function hasLocalPrettierConfig(cwd = process.cwd()) {
+  const candidates = [
+    'prettier.config.cjs',
+    'prettier.config.js',
+    'prettier.config.mjs',
+    '.prettierrc',
+    '.prettierrc.cjs',
+    '.prettierrc.js',
+    '.prettierrc.mjs',
+    '.prettierrc.json',
+    '.prettierrc.yml',
+    '.prettierrc.yaml',
+    'package.json', // pode ter campo "prettier"
+  ].map((p) => resolve(cwd, p))
+  return candidates.some((p) => existsSync(p))
+}
+
 function runPrettier(write) {
-  // Executa o bin do Prettier via Node (sem depender de PATH)
   const prettierBin = require.resolve('prettier/bin/prettier.cjs')
   const patterns =
     args.passthrough.length > 0
@@ -92,15 +109,25 @@ function runPrettier(write) {
     '--log-level',
     'warn',
     ...patterns,
-    // Prettier respeita .prettierignore; se quiser, podemos incluir um padrão aqui.
   ]
+
+  // Se o projeto NÃO tiver config próprio do Prettier,
+  // usamos o preset padrão do pacote (@inovatecjp/eslint-config/prettier).
+  if (!hasLocalPrettierConfig()) {
+    try {
+      const defaultCfg = require.resolve('@inovatecjp/eslint-config/prettier')
+      cliArgs.unshift('--config', defaultCfg)
+    } catch {
+      // se por algum motivo não resolver, segue sem --config
+    }
+  }
 
   const child = spawn(process.execPath, [prettierBin, ...cliArgs], {
     stdio: 'inherit',
-    shell: process.platform === 'win32'
+    shell: process.platform === 'win32',
   })
 
-  child.on('exit', code => process.exit(code ?? 1))
+  child.on('exit', (code) => process.exit(code ?? 1))
 }
 
 ;(async () => {

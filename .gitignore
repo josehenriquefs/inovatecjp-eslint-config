@@ -1,0 +1,18 @@
+# dependências
+node_modules/
+
+# artefatos
+dist/
+build/
+coverage/
+.eslintcache
+
+# SO / editor
+.DS_Store
+Thumbs.db
+*.log
+*.tgz
+
+# ferramentas
+.turbo/
+.cache/

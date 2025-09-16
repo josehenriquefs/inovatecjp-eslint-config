@@ -1,7 +1,7 @@
 {
   "name": "@inovatecjp/eslint-config",
   "author": {"name": "@josehenriquefs","email": "devjosehenriquefs@gmail.com"},
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "All-in-one ESLint 9 (flat) + Prettier with CLI for inovatecjp teams (react, react-native, node).",
   "type": "module",
   "license": "MIT",
