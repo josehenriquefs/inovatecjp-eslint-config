@@ -33,6 +33,8 @@ const args = parseArgs(process.argv)
 const stackToConfig = (stack, typeaware) => {
   const baseName = typeaware ? 'base-typeaware.js' : 'base.js'
   switch (stack) {
+    case 'node-strict':
+      return 'node-strict.js'               // <— novo
     case 'node':
       return typeaware ? 'node-typeaware.js' : 'node.js'
     case 'react':

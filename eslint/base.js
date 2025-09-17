@@ -1,18 +1,13 @@
-// base.js — Flat config (ESM) universal, sem regras que exigem type info
+// base.js — Flat config (ESM) universal
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import prettier from 'eslint-config-prettier'
 import importPlugin from 'eslint-plugin-import'
+import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import unicorn from 'eslint-plugin-unicorn'
 import globals from 'globals'
 
-// Observação sobre ordenação de imports:
-// - Usamos `import/order` (plugin-import) para grupos/linhas em branco.
-// - Usamos o core `sort-imports` APENAS para ordenar os membros dentro do mesmo import.
-//   Por isso ativamos: { ignoreDeclarationSort: true } para NÃO conflitar com `import/order`.
-
 export default [
-  // Ignora artefatos comuns
   {
     ignores: [
       '**/node_modules/**',
@@ -23,102 +18,96 @@ export default [
       '**/coverage/**',
       '**/.turbo/**',
       '**/.cache/**',
-
-      // evita rodar em configs do próprio projeto (opcional)
       'eslint.config.*',
       'prettier.config.*',
     ],
   },
 
-  // Base universal para JS/TS
   {
     files: ['**/*.{ts,tsx,js,jsx,mjs,cjs}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
       parser: tsParser,
-      globals: {
-        ...globals.es2024,
-      },
+      globals: { ...globals.es2024 },
       parserOptions: {
-        // ❗️Não configuramos "project" aqui (sem type-aware neste preset)
+        // sem project aqui (type-aware fica no base-typeaware)
       },
     },
     plugins: {
       '@typescript-eslint': tseslint,
       import: importPlugin,
       unicorn,
+      'simple-import-sort': simpleImportSort,
     },
     settings: {
-      // Ajuda o plugin-import a resolver TS/Node
       'import/resolver': {
         node: true,
-        typescript: {
-          alwaysTryTypes: true,
-        },
+        typescript: { alwaysTryTypes: true },
       },
     },
     rules: {
-      // ========= REGRAS GERAIS (como solicitado) =========
+      // ===== Regras gerais =====
       eqeqeq: ['error', 'always'],
       curly: ['error', 'all'],
       'no-var': ['error'],
       'prefer-const': ['error'],
-      'no-unused-vars': 'warn',
+      'no-unused-vars': 'off', 
       'consistent-return': 'error',
       'no-shadow': 'warn',
       'no-else-return': 'warn',
       'no-useless-return': 'warn',
       'no-unused-private-class-members': 'warn',
-
-      // console (universal)
       'no-console': 'warn',
 
-      // TypeScript (apenas regras que NÃO exigem type info)
+      // TS (apenas regras sem type info no base)
       '@typescript-eslint/consistent-type-definitions': ['warn', 'interface'],
       '@typescript-eslint/explicit-function-return-type': 'off',
-      // ❌ Regra que exige type info — deixamos OFF no base:
       '@typescript-eslint/no-misused-promises': 'off',
 
-      // Import (plugin-import)
-      'import/order': [
-        'error',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            ['parent', 'sibling', 'index'],
-            'object',
-            'type',
-          ],
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
+      // ===== Import validations (mantidas) =====
       'import/no-cycle': 'warn',
       'import/no-mutable-exports': 'error',
       'import/first': 'error',
       'import/newline-after-import': 'warn',
       'no-duplicate-imports': 'error',
 
-      // Core `sort-imports` apenas para membros, sem conflitar com import/order
-      'sort-imports': [
-        'warn',
+      // ===== Organização automática dos imports =====
+      // Troca de import/order + sort-imports -> simple-import-sort
+      // Grupos equivalentes: node:, pacotes, internos, parent, siblings/index, side-effects, estilos
+      'simple-import-sort/imports': [
+        'error',
         {
-          ignoreCase: true,
-          ignoreDeclarationSort: true, // NÃO ordena declarações; quem faz é import/order
-          ignoreMemberSort: false, // ordena membros: import { a, b }
-          allowSeparatedGroups: true,
+          groups: [
+            // Node.js builtins: node:fs, node:path
+            ['^node:'],
+            // Pacotes (ex: react, lodash, @org/*)
+            ['^@?\\w'],
+            // Imports internos por alias (ajuste para seus aliases se usar @/ ou ~/)
+            ['^(@|~)/'],
+            // Parent imports
+            ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
+            // Siblings & index
+            ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
+            // Side effect imports
+            ['^\\u0000'],
+            // Arquivos de estilo
+            ['^.+\\.s?css$'],
+          ],
         },
       ],
+      'simple-import-sort/exports': 'error',
 
-      // Unicorn (subset leve e útil)
+      // Unicorn (subset leve)
       'unicorn/prefer-node-protocol': 'warn',
       'unicorn/no-array-push-push': 'warn',
+
+      // ===== Desligar regras que conflitam com o sorter =====
+      'import/order': 'off',
+      'sort-imports': 'off',
     },
   },
 
-  // Prettier por último para desarmar conflitos de formatação
+  // Prettier por último
   prettier,
 ]

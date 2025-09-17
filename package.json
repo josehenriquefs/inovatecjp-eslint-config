@@ -1,7 +1,7 @@
 {
   "name": "@inovatecjp/eslint-config",
   "author": {"name": "@josehenriquefs","email": "devjosehenriquefs@gmail.com"},
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "All-in-one ESLint 9 (flat) + Prettier with CLI for inovatecjp teams (react, react-native, node).",
   "type": "module",
   "license": "MIT",
@@ -47,8 +47,9 @@
     "eslint-plugin-import": "^2.30.0",
     "eslint-import-resolver-typescript": "^3.6.1",
 
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+
     "eslint-plugin-unicorn": "^55.0.0",
-    "eslint-plugin-n": "^17.10.0",
 
     "eslint-plugin-react": "^7.35.2",
     "eslint-plugin-react-hooks": "^4.6.2",
@@ -59,7 +60,11 @@
     "eslint-plugin-vitest": "^0.4.1",
     "globals": "^15.9.0"
   },
+  "optionalDependencies": {
+    "eslint-plugin-n": "^17.10.0"
+  },
   "peerDependencies": {
     "typescript": ">=5.0.0"
   }
+  
 }
