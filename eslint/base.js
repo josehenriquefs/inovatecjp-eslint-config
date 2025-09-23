@@ -18,8 +18,14 @@ export default [
       '**/coverage/**',
       '**/.turbo/**',
       '**/.cache/**',
+
+      // configs do próprio projeto
       'eslint.config.*',
       'prettier.config.*',
+
+      // Prisma / código gerado
+      '**/generated/**',
+      '**/src/generated/**',
     ],
   },
 

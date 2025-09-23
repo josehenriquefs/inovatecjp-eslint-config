@@ -137,7 +137,7 @@ function runPrettier(write) {
 
   const child = spawn(process.execPath, [prettierBin, ...cliArgs], {
     stdio: 'inherit',
-    shell: process.platform === 'win32',
+    shell: false,
   })
 
   child.on('exit', (code) => process.exit(code ?? 1))
